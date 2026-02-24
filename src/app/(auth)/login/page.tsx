@@ -7,9 +7,7 @@ const LoginPage = async () => {
     await requireUnAuth();
 
     return (
-        <div>
-            <LoginForm/>
-        </div>
+        <LoginForm/>
     )
 }
 
