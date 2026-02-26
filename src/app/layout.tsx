@@ -4,6 +4,7 @@ import "./globals.css";
 import { TRPCReactProvider } from "@/trpc/client";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -35,8 +36,10 @@ export default function RootLayout({
             >
                 <TooltipProvider>
                     <TRPCReactProvider>
-                        {children}
-                        <Toaster richColors />
+                        <NuqsAdapter>
+                            {children}
+                            <Toaster richColors />
+                        </NuqsAdapter>
                     </TRPCReactProvider>
                 </TooltipProvider>
             </body>
