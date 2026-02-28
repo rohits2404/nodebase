@@ -12,7 +12,10 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 const formSchema = z.object({
-    endpoint: z.url({ message: "Please Enter a Valid URL" }),
+    variableName: z.string().min(1, { error: "Variable Name Is Required" }).regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, {
+        error: "Variable Name Must Start With a Letter or Underscore and Container only Letters, Numbers and Underscores"
+    }),
+    endpoint: z.url({ error: "Please Enter a Valid URL" }),
     method: z.enum(["GET","POST","PUT","PATCH","DELETE"]),
     body: z.string().optional()
 })
@@ -21,16 +24,18 @@ interface Props {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onSubmit: (value: z.infer<typeof formSchema>) => void;
+    defaultVariableName?: string;
     defaultEndpoint?: string;
     defaultMethod?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
     defaultBody?: string;
 }
 
-export const HttpRequestDialog = ({ open, onOpenChange, onSubmit, defaultBody, defaultEndpoint, defaultMethod }: Props) => {
+export const HttpRequestDialog = ({ open, onOpenChange, onSubmit, defaultVariableName, defaultBody, defaultEndpoint, defaultMethod }: Props) => {
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
+            variableName: defaultVariableName ?? "",
             endpoint: defaultEndpoint ?? "",
             method: defaultMethod ?? "GET",
             body: defaultBody ?? ""
@@ -40,6 +45,7 @@ export const HttpRequestDialog = ({ open, onOpenChange, onSubmit, defaultBody, d
     useEffect(() => {
         if (open) {
             form.reset({
+                variableName: defaultVariableName ?? "",
                 endpoint: defaultEndpoint ?? "",
                 method: defaultMethod ?? "GET",
                 body: defaultBody ?? ""
@@ -47,6 +53,7 @@ export const HttpRequestDialog = ({ open, onOpenChange, onSubmit, defaultBody, d
         }
     }, [open, defaultEndpoint, defaultMethod, defaultBody, form]);
 
+    const watchVariableName = form.watch("variableName") || "myApiCall";
     const watchMethod = form.watch("method");
     const showBodyField = ["POST","PUT","PATCH"].includes(watchMethod);
 
@@ -69,6 +76,25 @@ export const HttpRequestDialog = ({ open, onOpenChange, onSubmit, defaultBody, d
                     onSubmit={form.handleSubmit(handleSubmit)}
                     className="space-y-8 mt-4"
                     >
+                        <FormField
+                        control={form.control}
+                        name="variableName"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Variable Name</FormLabel>
+                                <FormControl>
+                                    <Input
+                                    placeholder="myApiCall"
+                                    {...field}
+                                    />
+                                </FormControl>
+                                <FormDescription>
+                                Use This Name to Reference the Result in Other Nodes:{" "}{`{{${watchVariableName}.httpResponse.data}}`}
+                                </FormDescription>
+                                <FormMessage/>
+                            </FormItem>
+                        )}
+                        />
                         <FormField
                         control={form.control}
                         name="method"
